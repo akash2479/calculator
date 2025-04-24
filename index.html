@@ -251,8 +251,9 @@
         <p><strong>Next birthday on:</strong> ${nextBirthdayDay} (${nextBirthday.toDateString()})</p>
         <p><strong>Maha Dasha (Vedic - from DOB):</strong> ${mahaDasha}</p>
         <p><strong>Next Maha Dasha of ${now.getFullYear()}:</strong> ${currentYearDasha}</p>
-        <pre><strong>Maha Dasha Timeline:</strong>\n${detailedTimeline}</pre>
         <p><strong>Current Antardasha:</strong> ${calculateAntardasha(dob)}</p>
+        <pre><strong>Maha Dasha Timeline:</strong>\n${detailedTimeline}</pre>
+        
       `;
       document.getElementById("result").innerHTML = resultHTML;
     }
