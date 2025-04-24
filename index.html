@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌟 Advanced Age & Dasha Calculator 🌟</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #ff7e5f, #feb47b);
+      color: #333;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-theme {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+    }
+
+    body.light-theme {
+      background: linear-gradient(135deg, #ffffff, #a3d8f4);
+      color: #333;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      width: 380px;
+      text-align: center;
+      color: inherit;
+      transition: all 0.3s ease-in-out;
+    }
+
+    body.dark-theme .container {
+      background-color: #1e1e2f;
+      color: #ffffff;
+    }
+
+    .container:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-btn {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font-weight: 600;
+      transition: background-color 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      background-color: #555;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    input[type="date"], button {
+      padding: 12px;
+      font-size: 1.1rem;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      transition: all 0.2s ease;
+    }
+
+    input[type="date"]:focus, button:focus {
+      outline: none;
+      border: 1px solid #007BFF;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .result p {
+      font-size: 1.2rem;
+      margin: 10px 0;
+      color: inherit;
+    }
+    .result pre {
+  text-align: left;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+  color: inherit;
+  white-space: pre-wrap; /* This ensures that long lines wrap within the box */
+  overflow-y: visible; /* Prevents scrolling */
+  max-height: none; /* Allows the content to grow as needed */
+}
+
+    body.dark-theme .result pre {
+      background-color: #2e2e3a;
+      border-color: #444;
+    }
+
+    .error {
+      color: #e74c3c;
+      font-size: 1.1rem;
+      margin-top: 15px;
+    }
+
+    .success {
+      color: #2ecc71;
+      font-size: 1.1rem;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body class="light-theme">
+  <div class="container">
+    <button class="toggle-btn" onclick="toggleTheme()">Toggle Theme</button>
+    <h2>🌟 Advanced Age & Dasha Calculator 🌟</h2>
+    <div class="input-group">
+      <input type="date" id="dob" />
+      <button onclick="calculateDetails()">Calculate</button>
+      <button onclick="resetFields()">Reset</button>
+      <button onclick="downloadDetails()">Download Details</button>
+    </div>
+    <div id="result" class="result"></div>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    const dashaPeriods = {
+      "Sun": 1, "Moon": 2, "Jupiter": 3, "Rahu": 4,
+      "Mercury": 5, "Venus": 6, "Ketu": 7,
+      "Saturn": 8, "Mars": 9
+    };
+
+    const fullCycle = ["Sun", "Moon", "Jupiter", "Rahu", "Mercury", "Venus", "Ketu", "Saturn", "Mars"];
+
+    function digitalRoot(n) {
+      while (n > 9) {
+        n = n.toString().split('').reduce((acc, digit) => acc + Number(digit), 0);
+      }
+      return n;
+    }
+
+    function getDayDashaNumber(dayName) {
+      const map = {
+        "Sunday": 1,
+        "Monday": 2,
+        "Tuesday": 9,
+        "Wednesday": 5,
+        "Thursday": 3,
+        "Friday": 6,
+        "Saturday": 8
+      };
+      return map[dayName];
+    }
+
+    function calculateAntardasha(dob) {
+      const now = new Date();
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const currentBirthday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      const prevBirthday = new Date(now.getFullYear() - 1, dob.getMonth(), dob.getDate());
+      const lastBirthday = (now >= currentBirthday) ? currentBirthday : prevBirthday;
+      const weekdayVal = getDayDashaNumber(days[lastBirthday.getDay()]);
+      const dobDigits = [
+        ...dob.getDate().toString().split('').map(Number),
+        ...((dob.getMonth() + 1).toString().split('').map(Number)),
+        ...prevBirthday.getFullYear().toString().slice(-2).split('').map(Number),
+        weekdayVal
+      ];
+      const sum = dobDigits.reduce((a, b) => a + b, 0);
+      const antardashaNum = digitalRoot(sum);
+      const antardashaMap = {
+        1: "Sun", 2: "Moon", 3: "Jupiter", 4: "Rahu",
+        5: "Mercury", 6: "Venus", 7: "Ketu", 8: "Saturn", 9: "Mars"
+      };
+      return antardashaMap[antardashaNum];
+    }
+
+    function calculateDetails() {
+      const dobInput = document.getElementById("dob").value;
+      if (!dobInput) {
+        document.getElementById("error").innerText = "Please enter a valid date of birth.";
+        return;
+      }
+      const dob = new Date(dobInput);
+      if (dob >= new Date()) {
+        document.getElementById("error").innerText = "Date of birth cannot be in the future.";
+        return;
+      }
+
+      document.getElementById("error").innerText = "";
+
+      const now = new Date();
+      let age = now.getFullYear() - dob.getFullYear();
+      const m = now.getMonth() - dob.getMonth();
+      const totalMonths = age * 12 + m;
+      const totalDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+      const totalHours = totalDays * 24 + now.getHours();
+
+      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const birthDay = days[dob.getDay()];
+      const currentBirthday = new Date(now.getFullYear(), dob.getMonth(), dob.getDate());
+      const currentBirthdayDay = days[currentBirthday.getDay()];
+      const nextBirthday = new Date(now.getFullYear() + 1, dob.getMonth(), dob.getDate());
+      const nextBirthdayDay = days[nextBirthday.getDay()];
+      const prevBirthday = new Date(now.getFullYear() - 1, dob.getMonth(), dob.getDate());
+      const prevBirthdayDay = days[prevBirthday.getDay()];
+
+      const mahaDasha = getStartingDasha(dob);
+      const currentYearDasha = getCurrentYearDasha(dob, now);
+      const detailedTimeline = getMahaDashaTimelineDetailed(dob, now);
+
+      const resultHTML = `
+        <p><strong>Age:</strong> ${age} years, ${totalMonths} months, ${totalDays} days, ${totalHours} hours</p>
+        <p><strong>Born on:</strong> ${birthDay}</p>
+        <p><strong>Previous birthday was on:</strong> ${prevBirthdayDay} (${prevBirthday.toDateString()})</p>
+        <p><strong>Current birthday on:</strong> ${currentBirthdayDay} (${currentBirthday.toDateString()})</p>
+        <p><strong>Next birthday on:</strong> ${nextBirthdayDay} (${nextBirthday.toDateString()})</p>
+        <p><strong>Maha Dasha (Vedic - from DOB):</strong> ${mahaDasha}</p>
+        <p><strong>Next Maha Dasha of ${now.getFullYear()}:</strong> ${currentYearDasha}</p>
+        <pre><strong>Maha Dasha Timeline:</strong>\n${detailedTimeline}</pre>
+        <p><strong>Current Antardasha:</strong> ${calculateAntardasha(dob)}</p>
+      `;
+      document.getElementById("result").innerHTML = resultHTML;
+    }
+
+    function resetFields() {
+      document.getElementById("dob").value = "";
+      document.getElementById("result").innerHTML = "";
+      document.getElementById("error").innerText = "";
+    }
+
+    function downloadDetails() {
+      const result = document.getElementById("result").innerText;
+      const blob = new Blob([result], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'dasha_details.txt';
+      link.click();
+    }
+
+    function getStartingDasha(dob) {
+      const sum = dob.getDate().toString().split("").reduce((a, b) => a + parseInt(b), 0);
+      const startIndex = (sum - 1) % fullCycle.length;
+      return fullCycle[startIndex] + " Maha Dasha";
+    }
+
+    function getCurrentYearDasha(dob, now) {
+      const year = now.getFullYear();
+      const sum = dob.getDate().toString().split("").reduce((a, b) => a + parseInt(b), 0);
+      let startIndex = (sum - 1) % fullCycle.length;
+      let startYear = dob.getFullYear();
+      let remainingYears = year - startYear;
+
+      while (remainingYears > 0) {
+        const planet = fullCycle[startIndex % fullCycle.length];
+        const period = dashaPeriods[planet];
+        if (remainingYears >= period) {
+          remainingYears -= period;
+          startIndex++;
+        } else break;
+      }
+
+      return fullCycle[startIndex % fullCycle.length] + " Maha Dasha";
+    }
+
+    function getMahaDashaTimelineDetailed(dob, now) {
+      const day = dob.getDate(), month = dob.getMonth(), year = dob.getFullYear();
+      const sum = day.toString().split("").reduce((acc, val) => acc + parseInt(val), 0);
+      let startIndex = (sum - 1) % fullCycle.length;
+      let pointerDate = new Date(year, month, day);
+      let timeline = "", isCurrentIncluded = false;
+
+      while (!isCurrentIncluded) {
+        const planet = fullCycle[startIndex % fullCycle.length];
+        const years = dashaPeriods[planet];
+        const endDate = new Date(pointerDate.getFullYear() + years, pointerDate.getMonth(), pointerDate.getDate());
+
+        const from = pointerDate.toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' });
+        const to = endDate.toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' });
+
+        const isCurrent = now >= pointerDate && now < endDate;
+        timeline += `${isCurrent ? '👉 ' : ''}${from} to ${to} - ${planet} Maha Dasha${isCurrent ? " ← (current)" : ""}\n`;
+
+        if (isCurrent) isCurrentIncluded = true;
+
+        pointerDate = endDate;
+        startIndex++;
+      }
+
+      return timeline.trim();
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains('dark-theme')) {
+        body.classList.remove('dark-theme');
+        body.classList.add('light-theme');
+      } else {
+        body.classList.remove('light-theme');
+        body.classList.add('dark-theme');
+      }
+    }
+  </script>
+</body>
+</html>
